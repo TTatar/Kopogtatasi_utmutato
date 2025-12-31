@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kopogtatási Útmutató</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e3a8a 100%);
+
+            min-height: 100vh;
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #1f2937;
+            margin-bottom: 4px;
+            font-weight: 700; /* Biztosítjuk a vastagságot */
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .progress-container {
+            margin-top: 16px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80 0%, #16a34a 100%);
+            transition: width 0.3s ease;
+            border-radius: 999px;
+        }
+
+        /* --- Fejezet stílusok --- */
+        .category-section {
+            margin-bottom: 12px; 
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+            user-select: none;
+        }
+        
+        .category-header:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .category-title {
+            font-size: 35px;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0; 
+            padding: 0;
+        }
+
+        .category-icon {
+            width: 32px;
+            height: 32px;
+            color: white;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+
+        .category-header.active .category-icon {
+            transform: rotate(180deg);
+        }
+
+        .category-content {
+            display: none; 
+            padding-top: 12px;
+        }
+
+        .category-content.visible {
+            display: block;
+        }
+        
+        .step-card {
+            background: white;
+            border-radius: 12px;
+            border: 2px solid;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 12px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .step-card:active {
+            transform: scale(0.98);
+        }
+
+        .step-header {
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #9ca3af;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox.checked {
+            background: #16a34a;
+            border-color: #16a34a;
+        }
+
+        .checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .step-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .step-number {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 28px;
+            line-height: 1.4;
+        }
+
+        .step-title.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .step-description {
+            color: #374151;
+            font-size: 24px;
+            line-height: 1.6;
+            margin-top: 12px;
+            padding-right: 8px;
+            display: none;
+        }
+
+        .step-description.visible {
+            display: block;
+        }
+
+        .step-description ul {
+            margin-top: 12px;
+            margin-left: 24px;
+        }
+
+        .step-description li {
+            margin-bottom: 8px;
+        }
+
+        .expand-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            margin-top: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .expand-icon.expanded {
+            transform: rotate(180deg);
+        }
+
+        /* --- Footer stílus módosítva --- */
+        .footer {
+            background: white; /* Fehér háttér, mint a fejlécben */
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+            text-align: center;
+            /* A fejléc színét használjuk */
+            color: #1f2937; 
+        }
+
+        /* A footerben lévő címek stílusa igazítva a .header h1-hez */
+        .footer h1, .footer h2, .footer h3 {
+            color: #1f2937;
+            font-weight: 700; /* Vastag betű */
+            margin-bottom: 16px;
+            line-height: 1.4;
+            font-size: 24px; /* Kicsit kisebb, mint a főcím, hogy kiférjen, de stílusban azonos */
+        }
+        
+        .footer a {
+            color: #dc2626;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        .footer-main-text {
+            font-size: 28px; /* Ez pontosan akkora, mint a főcím */
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* Category colors */
+        .cat-bevezetes { background: #e6f0ff; border-color: #99c2ff; }
+        .cat-elso-benyomas { background: #f2fff2; border-color: #99ff99; }
+        .cat-beszelgetes { background:  #e0f2ff; border-color: #90c8ff; }
+        .cat-adminisztracio { background: #fff2cc; border-color: #ffcc66; }
+        .cat-zaro { background: #dbeafe; border-color: #93c5fd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1 style="margin: 0;">Kopogtatási Útmutató</h1>
+                <img 
+                   src="data:image/jpeg;base64,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" 
+                    alt="Logó" 
+                    style="height: 80px; margin-left: 20px;"
+                />
+            </div>
+
+            <p>
+            Készítette: Györe-Szűcs Sándor v.7.5
+            </p>
+            
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Haladás</span>
+                    <span id="progressText">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bevezetés -->
+        <div class="category-section">
+            <div class="category-header">
+                <h2 class="category-title">Bevezetés</h2>
+                <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </div>
+            
+            <div class="category-content">
+                <div class="step-card cat-bevezetes" data-step="1">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(1, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">1. téma</div>
+                            <h3 class="step-title">Mi a politikai kopogtatás valójában?</h3>
+                            <p class="step-description">Egy közvetlen beszélgetés, két ember között. Nem csak arról szól, hogy ajtóról ajtóra jársz. Ez egy komolyan megtervezett adatalapú, mélyen emberi folyamat, amivel kapcsolatokat építesz.</p>
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="step-card cat-bevezetes" data-step="2">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(2, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">2. téma</div>
+                            <h3 class="step-title">A kampányok során miért fektetnek sok energiát a kopogtatásba?</h3>
+                            <p class="step-description">Kutatások bizonyítják, hogy a személyes kopogtatás akár 3-4%-kal is növelheti a részvételi arányt. Egy szoros versenyben ez a 3-4% döntő lehet.</p>
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Első benyomás -->
+        <div class="category-section">
+            <div class="category-header">
+                <h2 class="category-title">Felkészülés a kopogtatásra</h2>
+                <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </div>
+            
+            <div class="category-content">
+			
+			
+							 <div class="step-card cat-elso-benyomas" data-step="3">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(13, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">3. téma</div>
+                            <h3 class="step-title">Önkéntesi szerződés nélkül nem kopogtathatsz!</h3>
+                            <p class="step-description">Az önkéntesi szerződés nélkül nem végezhetsz TISZA nevében önkéntesi feladatokat.<br><br> A szerződés: <br>
+
+        - Rögzíti, milyen feladatokat vállalsz, így tudjuk, hol van szükség további segítségre.<br>
+
+        <strong>- Biztosítja, hogy ha terepen dolgozol (például kopogtatsz), jogi és közösségi védelem alatt állsz.</strong> <br>
+
+        - Egyben védi a közösséget is azoktól, akik nem a közös cél érdekében csatlakoznának.<br><br>
+
+
+        Ha jelentkeztél már önkéntesnek akkor kaptál levélben egy önkéntesi szerződést. Ez terepmunkánál mindig legyen elérhető nálad.
+        Nem kell kinyomtatva lennie. 
+
+            <a href="https://drive.proton.me/urls/NR4DGDEVC4#AJgAcwgqgMlg" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    📄 Ide kattintva 
+        </a>
+
+        bármikor letöltheted elektronikus változatban, így bármikor a telefonodon megmutathatod.</p>
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+			
+			
+                <div class="step-card cat-elso-benyomas" data-step="3">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(3, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">4. téma</div>
+                            <h3 class="step-title">Az első benyomás mindennél fontosabb!</h3>
+                            <div class="step-description">
+                                Az első benyomás a hozzáállásod, viselkedésed alapján dől el. Csak 7%-ot számít az, hogy mit is mondasz az első benyomáskor. (7% a szavak súlya, 38% hanglejtésé és 55% a testbeszédé). Ami fontos:
+                                <ul>
+                                    <li>Hogyan és hol állsz. (Ne lépj be a másik intim zónájába, ne legyél túl közel hozzá.)</li>
+                                    <li>Hova nézel. (Nézz a szemébe, de ne bámuld hosszasan.)</li>
+                                    <li>Hogy vagy felöltözve. (Légy ápolt, az általános elvárásoknak megfelelően. Rendezett legyen a külsőd.)</li>
+                                    <li>Barátságos mosolygós arccal köszöntöd-e, szeretettel, harmóniával a szívedben.</li>
+                                    <li>Önazonos, hiteles vagy-e. Ezt az emberek ösztönösen megérzik.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+				
+
+
+                <div class="step-card cat-elso-benyomas" data-step="4">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(4, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">5. téma</div>
+                            <h3 class="step-title">A kezdés rutinja, ideje, mit vigyél magaddal. </h3>
+                            <div class="step-description">
+                                <ul>
+                                    <li>Kopogtass és csengess egyszerre, biztos, ami biztos. Ha nincs csengő mond hangosan, hogy: Jó napot kívánok.</li>
+                                    <li>Légy türelmes, várj egy teljes percet. Lehet, hogy valaki csak elfoglalt.</li>
+                                    <li>Lépj hátra 3 lépést.</li>
+                                    <li>Füzeted, mappád tartsd az oldalad mellett, ne magad előtt.</li>
+                                    <li>Vedd le a napszemüveged.</li>
+                                    <li>
+                                    <strong>Kopogtatásra a leghatékonyabb időpontok:</strong> 
+									<br> - Hétköznap:16:00-19:30 között.<br>
+     - 9:00 elött és 20:00 után ne kopogtassunk.<br>
+     - Ebédidőt is tartsuk be: 11:45-12:45<br>
+     - Vasárnap ne kopogtassunk!<br>
+                                    </li>
+                                    
+                                    <strong><li>Ami legyen nálad, mielőtt elindulsz: </strong><br>
+                                    
+    - Két jó toll<br>
+
+    - Mappa, amin írhatsz <br>
+
+    - <strong>Térkép,</strong> amit a kopogtató felelőstől kapsz, hogy merre is kopogtassatok. <br>
+
+    - <strong>Adatvédelmi tájékoztató,</strong> amit kérj el feltétlen a kopogtató felelősödtől, vagy a kopogtatás szervezőjétől. <br>
+
+    - <strong>Kontaktoló lap, </strong> amin írod hol, mi történt. A kopogtató felelősödtől, vagy a kopogtatás szervezőjétől feltétlen kérd el előre. <br>
+
+    - <strong>Adatgyűjtő ívek. </strong> A kopogtató felelősödtől, vagy a kopogtatás szervezőjétől feltétlen kérd el előre.<br>
+
+    - <strong>Önkéntesi szerződésed. </strong> Ezt ebből az útmutatóból le tudod tölteni (lásd Önkéntesi szerződés nélkül nem kopogtathasz), vagy közvetlen be is mutathatod ebben az aplikációban a telefonodról. <br>
+
+    - Feltöltött mobil telefon. <br>
+
+    - Önkéntest megkülönböztető kiegészítő/ruházat.(Jelvény, pulcsi, ha van.) <br>
+
+    - Esetleg egy tartalék 3-as pluszos szemüveg, ha kijönnek és nem hozzák magukkal.<br>
+
+    - Jó lábbeli és időjárásnak megfelelő ruházat. Valami, ahova az eső ellen el tudod tenni a papírokat.								
+                                    
+                                    
+                                    
+                                </ul>
+                            </div>
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Beszélgetés -->
+        <div class="category-section">
+            <div class="category-header">
+                <h2 class="category-title">A kopogtatás</h2>
+                <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </div>
+
+            <div class="category-content">
+                <div class="step-card cat-beszelgetes" data-step="5">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(5, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">6. téma</div>
+                            <h3 class="step-title">A kopogtatás indítása</h3>
+                            <div class="step-description">
+                                <ul>
+                                    <li>Röviden, kedvesen, udvariasan, de magabiztosan mond el miért jöttél, mit szeretnél. (max. 1 percben)<br>
+    1. Bemutatkozás (15 mp.)  <br>
+    2. Üzenet átadása(30 mp.) <br>
+    3. Cselekvésre hívás (15 mp.)
+    </li>
+                                    <li>PÉLDA:<br> 
+    1.<strong><em> Jó napot kívánok. XY vagyok, Tisza önkéntes, XY képviselőjelölt megbízásából szeretném megkérdezni, hogy támogatja-e Ön a TISZA adócsökkentési és nyugdíjemelési programját? </em></strong><br>
+
+    2. <strong><em> Kérem mondja el véleményét ezekkel a programokkal kapcsolatban. 
+    Ha egyetért velük, szeretném megkérni írja alá ezt a programunkat támogató adatgyűjtő ívünket.</em></strong><br>
+    </li>
+                                    <li>Mindig figyelmesen, odafigyelve hallgasd meg. Ne szakítsd félbe. Mindig légy önmagad.</li>
+                                    <li>Jelezd vissza, hogy érted, amit mond (egyetérteni nem kell)!</li>
+                                    <li>Kérdezz bátran elgondolkodtató kérdésekkel. Kétoldalú kommunikációra törekedj.</li>
+                                    <li>Amiben lehet érts vele egyet, keresd a közös pontokat. Állj mellé, érezze, nem vagy ellensége.<li>Tegeződve vagy magázódva kommunikálj, mindig az adott helyzetnek megfelelően.</li>
+                                    <li><strong>Ismertesd a TISZA programját. Alább találod ezeket a programokat részletesen leírva,</strong> amit akár innen a telefonodról is felolvashatsz, amit úgyis megtanulsz pár kopogtatás után. Ha hitetlenkedik, ott vannak a TISZA hivatalos linkjei, amit bemutathatsz, hogy mi igazat beszélünk. </li>
+    <li>Max. 5-10 perc után udvariasan zárd le a beszélgetést és köszönj el.</li>
+
+                                </ul>
+                            </div>
+                            
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div class="step-card cat-beszelgetes" data-step="6/a">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck('6/a', event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">7. téma</div>
+                            <h3 class="step-title">A Nyugdíjemelési program ismertetése</h3>
+                            <div class="step-description">
+                            
+                            
+                            <a href="https://drive.proton.me/urls/8NASFJ18PR#spscdHBMBw6f" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    📄 TISZA szórólap a nyugdíjemelésről
+    </a> <br><br>
+    <li>Nyugdíjas SZÉP-kártya. A nyugdíjasok 97 százaléka kapná. 250 ezer forint alatti nyugdíj esetén évi 200 ezer forint, 250–500 ezer forint között 100 ezer forint járna. Félmillió felett a jogosultság megszűnne.
+    <br>
+    <li>120 ezer forintos minimálnyugdíj bevezetése. Az alacsony, 60–100 ezer forintos nyugdíjak azonnali kiegészítése. Ez 280 ezer főt érintene.
+    <br>
+    <li>Célzott emelés a legalacsonyabb jövedelműeknek A 120–140 ezer forint közötti nyugdíjak differenciált növelése. Például a 120–125 ezer forintos nyugdíjak 12 ezer forinttal, a 135–140 ezer közötti ellátások 6 ezer forinttal nőnének. Ez további 160 ezer embert érint.
+    <br>
+    <li>Az időskorúak járadékának megduplázása azoknál, akik nem rendelkeznek 20 év munkaviszonnyal. Így például egy egyedülálló, 75 év feletti idős 56 940 forint helyett 113 880 forintot kapna.
+    <br>
+    <li>Az otthonápolási díjak 50%-os emelése. Ez közvetlenül 58 ezer embert érintene, köztük mintegy 40 ezer nyugdíjast és családtagjaikat.
+    <br>
+    <li>ÁFA-csökkentés: az alapvető élelmiszerek áfáját 27-ről 5 százalékra csökkentenék, a vényköteles gyógyszerek áfája megszűnne.
+    <br>
+
+
+        <a href="https://magyartisza.hu/hirek/ujsag/melto-idoskort-mindenkinek-bemutattak-a-tisza-nyugdijprogramjat " 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    📄 Itt találhatók a TISZA erre vonatkozó hivatalos dokumentumai
+    </a>
+
+    , ha valaki nem hiszi el ezeket az állításokat. Meg lehet neki mutatni.
+                            
+                            </div>
+                            
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="step-card cat-beszelgetes" data-step="6/b">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck('6/b', event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">8. téma</div>
+                            <h3 class="step-title">Adócsökkentési program ismertetése</h3>
+                            <div class="step-description">
+                            
+                            
+                            <a href="https://drive.proton.me/urls/11DFJEWX18#en5bzmUhTbRn" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    📄 TISZA szórólap az adócsökkentésről
+    </a> <br><br>
+    <li>9%-ra csökkenti a minimálbért keresők jövedelemadóját. 
+        Ezzel a minimálbért keresőknek havi 20 ezer, évi 240 ezer forinttal kevesebb adót kell fizetniük a TISZA kormányra kerülése esetén.
+    <br>
+    <li>Csökkenti a 625 ezer forintnál kevesebbet keresők jövedelem adóját.
+        420 ezer forintos bruttó fizetésű ember havi 15 ezer forinttal fog kevesebb adót fizetni egy TISZA-kormány idején, míg egy 500 ezer forintos fizetésnél havi 10 ezer forint lesz a megtakarítás. De még egy 625 ezer forintos kereset mellett is havi 5 ezer forinttal több marad a munkavállaló zsebében.
+    <br>	
+    <li>Senkinek sem növeli a munkabérét terhelő adóját
+    <br>
+    <li>Az egészséges élelmiszerek és a tűzifa általános forgalmi adója pedig 27-ről 5 százalékosra csökkenne.
+    <br>
+    <li>ÁFA mentessé teszti a vényköteles gyógyszereket
+    <br>
+    <li>Duplájára emeli ma családi pótlékot
+    <br>
+    <li>Bővíti a családi adókedvezményeket
+    <br>
+    <li>Megtartja a 13. havi nyugdíjat
+    <br>
+    <li>Bevezeti a 200 000 Ft-os nyugdíjas szépkártyát
+    <br>
+    <li>Megadóztatja az 5 milliárd feletti vagyonokat.<br>
+    <br>
+
+    Itt találhatók a TISZA erre vonatkozó hivatalos dokumentumai, ha valaki nem hiszi el ezeket az állításokat. Meg lehet neki mutatni:
+    <br>
+
+
+        <a href="https://adocsokkentes.hu/" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    📄 Az adó csökkentésről. Itt ki is lehet számolni mennyivel fog csökkenni.
+    </a> <br><br>
+    <a href="https://magyartisza.hu/hirek/ujsag/fontos-bejelentes-a-tisza-afacsoekkentesi-javaslatairol" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    📄 Az adó csökkentésről a TISZA hivatalos oldalán.
+    </a> <br><br>
+    <a href="https://www.youtube.com/watch?v=jVmOvy8qXks&t=11s" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    📄 Riport Kármán Andrással, a TISZA költségvetési és adópolitikai szakértőjével
+    </a> <br><br>
+                            
+                            </div>
+                            
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="step-card cat-beszelgetes" data-step="8">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(8, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">9. téma</div>
+                            <h3 class="step-title">Mi történik, ha nem tudod a választ?</h3>
+                            <p class="step-description">Ne tettesd, hogy szakértő vagy. Tényleg nem te vagy a jelölt. Mondd, hogy ez egy remek kérdés. Jegyezd fel és ígérd meg, hogy vissza fogunk térni a válasszal. Ez sokkal több bizalmat épít, mintha kitalálnál valamit.</p>
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="step-card cat-beszelgetes" data-step="9">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(9, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">10. téma</div>
+                            <h3 class="step-title">Mit nem szabad</h3>
+                            <p class="step-description">
+    <strong>NE MONDJ ELLENT!</strong> Ne használd a DE szót! (szeretlek, de… akkor most szeretsz vagy nem?)<br>
+
+    <strong>NE VITÁZZ!</strong> Nem kell győzködni senkit. Ne vitázz, fogadd el a véleményét! Mond helyette: – Sajnálom, hogy így gondolja.<br>
+    
+    <strong>NE GYŐZKÖDJ!</strong> Ha nem fogékony egy adott üzenetre, nagyon ellenálló, bizonytalan, ne zúdíts rá minden extra információt, ne akarj semmit ráerőltetni, mert el fogod ijeszteni.<br>
+
+    <strong>NE KONFRONTÁLÓDJ!</strong> Megköszönöd, hogy válaszolt a kérdésedre, további szép napot kívánva elköszönsz tőle, és elnézést kérsz, hogy feltartottad.<br>
+
+    <strong>NE SZEMÉLYESKEDJ!</strong> Ebbe nagyon könnyen bele lehet futni, főleg provokáció esetén, legyél óvatos!</p>
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adminisztráció -->
+        <div class="category-section">
+            <div class="category-header">
+                <h2 class="category-title">A kopogtatás befejezése és dokumentálása</h2>
+                <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </div>
+
+            <div class="category-content">
+                <div class="step-card cat-adminisztracio" data-step="10">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(10, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">11. téma</div>
+                            <h3 class="step-title">Adatgyűjtő ív kitöltése</h3>
+                            <div class="step-description">
+                            
+                            
+                            <a href="https://drive.proton.me/urls/XA5CH2RM38#OvVyQC3sm8fz" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    📄 Adatgyűjtő lap
+    </a> <br>
+    <li>A kopogtatás végén, ha a kérdezett egyetért a kezdeményezéssel, akkor diktálja be az adatait, amit az adatgyűjtő ívre <strong>olvashatóan</strong> rögzíts fel. Két aláírás tartozik minden címhez. Ha a felsőt írja alá, akkor az azt jelenti, hogy egyetért a kezdeményezéssel. Az alatta levő aláírás pedig azt jelenti, hogy engedélyezi, hogy a TISZA információkat oszthasson meg vele.</li>
+
+
+        <a href="https://drive.proton.me/urls/Y0A9QBS0ZC#4KrIB54DP4yc" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    📄 Itt található a TISZA adatgyűjtő íve letölthető formátumban
+    </a>
+
+
+                            </div>
+                            
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+
+
+            
+                <div class="step-card cat-adminisztracio" data-step="11">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(11, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">12. téma</div>
+                            <h3 class="step-title">Kontaktolólap kitöltése</h3>
+                            <div class="step-description">
+                            <a href="https://drive.proton.me/urls/0Y6ZDPD4NR#kuzli2HbBKgo" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    Kontaktolólapon
+    </a>
+                                a háztartások címeit kell beírni. Az utána levő K1, K2, K3 oszlopok jelölik a felkeresések számát és eredményét. Ezután levő NHC (nem használható cím) oszlopban jelöli, hogy a háztartás nem hasznos a jövőbeni kampányok során.<br>
+
+    <a href="https://drive.proton.me/urls/04ZP2YMN6R#KAeyRkQgD5i4" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    📄 A részletes kitöltési útmutatót itt találod.
+    </a>
+                                <ul>
+                                    <li>Ha valakihez első alkalommal bekopogsz, ajtót nyit, és aláír, akkor K1 oszlopba pipát teszel a címe után.</li>
+                                    <li>Ha valakihez első alkalommal bekopogsz, ajtót nyit, és nem ír alá, akkor K1 oszlopba X jelet tegyél, és az NHC oszlopba is X jelet tegyél.</li>
+                                    <li>Ha valakihez első alkalommal bekopogsz, de nincs válasz, akkor K1 oszlopba X jelet tegyél</li>
+                                    <li>Második és harmadik alkalommal ugyan így kell eljárni, de második alkalommal a K2 harmadiknál pedig a K3 oszlopba írjál.</li>
+   
+        <a href="https://drive.proton.me/urls/252NHWHXT8#ckkclCgLLbq9" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style="color: #dc2626; text-decoration: underline; cursor: pointer;">
+    📄 Itt található a TISZA kontatoló lapja letölthető formátumban
+    </a>								
+                                    
+                                    
+                                </ul>
+                            </div>
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="step-card cat-adminisztracio" data-step="12">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(12, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">13. téma</div>
+                            <h3 class="step-title">Az elköszönés rutinja</h3>
+                            <div class="step-description">
+                                <ul>
+                                    <li>Köszönd meg, hogy időt fordítottak rád és meghallgattak.</li>
+                                    
+                                    <li>Először is lépj el az ajtótól és csak utána rögzítsd az adatokat. Tiszteld meg ezzel a gesztussal.</li>
+                                    <li>Soha ne feledkezz el az adatok rögzítésétől, hogy a központi kampánycsapat azonnal megkaphassa.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Záró gondolatok -->
+        <div class="category-section">
+            <div class="category-header">
+                <h2 class="category-title">Záró gondolatok</h2>
+                <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </div>
+
+            <div class="category-content">
+			
+               
+                
+                
+                <div class="step-card cat-zaro" data-step="14">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(14, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">14. téma</div>
+                            <h3 class="step-title">Minden kopogtatás számít!</h3>
+                            <p class="step-description">Még akkor is, ha nem nyitnak ajtót. Ez értékes adat a kampánynak, ezek alapján tudja meg a központi kampánycsapat hova érdemes erőforrásokat csoportosítani, szóval az adatrögzítés nagyon is fontos.</p>
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="step-card cat-zaro" data-step="15">
+                    <div class="step-header">
+                        <div class="checkbox" onclick="toggleCheck(15, event)"></div>
+                        <div class="step-content">
+                            <div class="step-number">15. téma</div>
+                            <h3 class="step-title">Fontos tudnivalók</h3>
+                            <div class="step-description">
+                                <ul>
+                                    <li>Mindig gondolj a biztonságra, menj társsal és soha ne menj be senki lakásába.</li>
+                                    <li>Mindig légy udvarias, türelmes, alázatos még ha valaki goromba is. Köszönd meg az idejét, amit rád szánt.</li>
+                                    <li>Ne vitatkozz, veszekedj, sértegess. Ne felszólító módban beszélj. Ne legyél kioktató.</li>
+                                    <li>Szeretettel, hitelesen, őszintén beszélj mindig. Légy nyitott, empatikus.</li>
+                                    <li>Ne vállald túl magad, figyelj arra, hogy ne fáradj bele. Ne erőből akard megoldani.</li>
+                                    <li>Beszéljétek meg a tapasztalatokat, add tovább a tudásod a többi önkéntesnek!</li>
+                                    <li>Tanítsd meg nekik, hogyan is kell csinálni. Kísérjenek el téged eleinte. A nap végén mindig legyen egy kis idő az örömködésre, hiszen nagyszerű és fontos munkát végeztek.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+         
+           <h3 class="step-title" style="font-size: 28px;">Köszönjük a munkátokat és ne feledjétek:</h3> 
+            <!-- Az első linknél a h1-re vagy a környező elemre tesszük a normal súlyt -->
+            <h1 class="step-title" style="font-weight: normal;">
+            <a href="https://www.youtube.com/watch?v=J2NCIH-FS9g&list=PLj0XN8wTrBc-4Dm5VkIDS2gwiX8OFh1yb&index=2" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style="font-weight: normal;">
+                Egy rendszerváltáson keresztül megvalósuló működő Magyarországot teremtünk!
+            </a>
+            </h1>
+            
+            <!-- A második linknél (ami zöld is) -->
+            <h3 class="step-title" style="font-weight: normal;">
+            <a href="https://www.youtube.com/watch?v=qdiVyWgxEMI&list=PLj0XN8wTrBc-4Dm5VkIDS2gwiX8OFh1yb&index=3" 
+                style="color: green; font-weight: normal;"
+                target="_blank" 
+                rel="noopener noreferrer">
+                Tetteinkkel építjük fel a hazánkat!
+            </a>
+            </h3>
+            
+            <!-- A sima szövegeknél -->
+            <h3 class="step-title" style="font-weight: normal;">Szövetségeseket keresünk és nem alattvalókat.</h3>
+            <h3 class="step-title" style="font-weight: normal;">TISZA keretet ad, hogy kezünkbe vegyük a sorsunkat.</h3>
+        </div>
+
+    </div>
+
+    <script>
+        // State management
+        let checkedSteps = {};
+        const totalSteps = 14; 
+
+        // Load saved state
+        function loadState() {
+            const saved = localStorage.getItem('kopogtatasi-utmutato-kopogtatoknak');
+            if (saved) {
+                checkedSteps = JSON.parse(saved);
+                Object.keys(checkedSteps).forEach(step => {
+                    if (checkedSteps[step]) {
+                        const card = document.querySelector(`[data-step="${step}"]`);
+                        if (card) {
+                            const checkbox = card.querySelector('.checkbox');
+                            const title = card.querySelector('.step-title');
+                            if(checkbox) checkbox.classList.add('checked');
+                            if(title) title.classList.add('completed');
+                        }
+                    }
+                });
+                updateProgress();
+            }
+        }
+
+        // Save state
+        function saveState() {
+            localStorage.setItem('kopogtatasi-utmutato-kopogtatoknak', JSON.stringify(checkedSteps));
+        }
+
+        // Toggle checkbox
+        function toggleCheck(step, event) {
+            event.stopPropagation();
+            checkedSteps[step] = !checkedSteps[step];
+            
+            const card = document.querySelector(`[data-step="${step}"]`);
+            if (card) {
+                const checkbox = card.querySelector('.checkbox');
+                const title = card.querySelector('.step-title');
+                
+                if (checkedSteps[step]) {
+                    checkbox.classList.add('checked');
+                    title.classList.add('completed');
+                } else {
+                    checkbox.classList.remove('checked');
+                    title.classList.remove('completed');
+                }
+            }
+            
+            updateProgress();
+            saveState();
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const checked = Object.values(checkedSteps).filter(Boolean).length;
+            const percentage = Math.round((checked / 15) * 100); 
+            
+            const fill = document.getElementById('progressFill');
+            const text = document.getElementById('progressText');
+            
+            if(fill) fill.style.width = percentage + '%';
+            if(text) text.textContent = percentage + '%';
+        }
+
+        // Toggle card expand/collapse
+        document.querySelectorAll('.step-header').forEach(header => {
+            header.addEventListener('click', function(e) {
+                if (e.target.classList.contains('checkbox') || e.target.closest('.checkbox')) {
+                    return;
+                }
+                
+                const description = this.querySelector('.step-description');
+                const icon = this.querySelector('.expand-icon');
+                
+                if (description) description.classList.toggle('visible');
+                if (icon) icon.classList.toggle('expanded');
+            });
+        });
+
+        // Fejezetek nyitása/zárása
+        document.querySelectorAll('.category-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                
+                if (content && content.classList.contains('category-content')) {
+                    content.classList.toggle('visible');
+                    this.classList.toggle('active');
+                }
+            });
+        });
+
+        // Initialize
+        loadState();
+    </script>
+	    
+
+	
+</body>
+</html>
